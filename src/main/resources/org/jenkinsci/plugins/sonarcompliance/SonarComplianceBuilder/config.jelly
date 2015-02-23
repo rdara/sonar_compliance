@@ -1,0 +1,42 @@
+<?jelly escape-by-default='true'?>
+<j:jelly xmlns:j="jelly:core" xmlns:st="jelly:stapler" xmlns:d="jelly:define" xmlns:l="/lib/layout" xmlns:t="/lib/hudson" xmlns:f="/lib/form">
+  <!--
+    Sonar Compliance Project configuration.
+  -->
+
+  	<f:entry title="Name" field="name">
+  		<f:textbox default=""/>
+  	</f:entry>
+	
+
+  	<f:entry title="Compliance Rules" field="complianceRules">
+  		<f:textbox default="violations&#60;&#61;0,duplicated_lines&#60;&#61;0,coverage&#62;&#61;0"/>
+  	</f:entry>
+
+
+  	<f:entry title="Primary Sonar URL" field="primarySonarURL">
+  		<f:textbox default="http://localhost:9000"/>
+  	</f:entry>
+  	<f:entry title="Primary Sonar Project Key" field="primaryProjectKey">
+  		<f:textbox />
+  	</f:entry>
+  	
+  	<f:entry title="Dynamic sonar compliance?" field="sonarComparison" description="If checked, difference of sonar's metrics are used.">
+    	<f:checkbox name="sonarComparison"/>
+    </f:entry>
+  	
+  	<!--
+    <f:entry title="Do you want to use an additional sonar instance for dynamic comparison?" description="If checked, This secondary sonar metrics are compared to primary sonar metrics.">
+    	<f:checkbox name="additionalSonar" />
+    </f:entry>
+	-->
+  	
+		<f:optionalBlock inline="true" name="additionalSonar" field="additionalSonar" title="Do you want to use an additional sonar instance for dynamic comparison?" description="If checked, This secondary sonar metrics are compared to primary sonar metrics." >
+			<f:entry title="Secondary Sonar URL" field="secondarySonarURL">
+				<f:textbox default="http://localhost:9000"/>
+			</f:entry> 
+				<f:entry title="Secondary Sonar Project Key" field="secondaryProjectKey">
+			<f:textbox />
+		</f:entry>
+	</f:optionalBlock>
+</j:jelly>
