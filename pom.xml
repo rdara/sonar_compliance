@@ -12,7 +12,7 @@
 		<relativePath />
 	</parent>
 	<artifactId>sonar-compliance</artifactId>
-	<version>1.1-SNAPSHOT</version>
+	<version>0.0.1-SNAPSHOT</version>
 	<packaging>hpi</packaging>
 
 	<name>sonar-compliance Plugin</name>
@@ -59,7 +59,7 @@
 			<artifactId>jersey-client</artifactId>
 			<version>2.5</version>
 		</dependency>
-				<dependency>
+		<dependency>
 			<groupId>org.apache.commons</groupId>
 			<artifactId>commons-lang3</artifactId>
 			<version>3.1</version>
@@ -74,9 +74,14 @@
 			<artifactId>jersey-media-json-jackson</artifactId>
 			<version>2.5</version>
 		</dependency>
-		
+		<dependency>
+			<groupId>org.jenkins-ci.plugins</groupId>
+			<artifactId>token-macro</artifactId>
+			<version>1.10</version>
+			<optional>true</optional>
+		</dependency>
 	</dependencies>
-	
+
 
 	<!-- If you want to depend on other plugins: <dependencies> <dependency> 
 		<groupId>org.jenkins-ci.plugins</groupId> <artifactId>credentials</artifactId> 
