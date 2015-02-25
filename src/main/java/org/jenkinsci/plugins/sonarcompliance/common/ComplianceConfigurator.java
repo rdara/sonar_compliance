@@ -1,5 +1,9 @@
 package org.jenkinsci.plugins.sonarcompliance.common;
 
+import hudson.model.BuildListener;
+import hudson.model.AbstractBuild;
+
+import java.io.IOException;
 import java.io.PrintStream;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -8,9 +12,13 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import jenkins.model.Jenkins;
+
 import org.apache.commons.lang3.StringUtils;
 import org.jenkinsci.plugins.sonarcompliance.SonarComplianceBuilder;
 import org.jenkinsci.plugins.sonarcompliance.model.ComplianceRule;
+import org.jenkinsci.plugins.tokenmacro.MacroEvaluationException;
+import org.jenkinsci.plugins.tokenmacro.TokenMacro;
 
 /**
  * @author Ramesh Dara
@@ -25,7 +33,22 @@ public class ComplianceConfigurator extends BaseConfigurator {
     private boolean dynamicCompliance = false;
     private Map<String, ComplianceRule> complianceRules = new ConcurrentHashMap<String, ComplianceRule>();
 
-    public ComplianceConfigurator(SonarComplianceBuilder builder) {
+    public ComplianceConfigurator(SonarComplianceBuilder builder, AbstractBuild build, BuildListener listener) {
+        try {
+            addProperties(builder, listener);
+            expandMacros(build, listener);
+            generateComplianceRules();
+        } catch (Exception e) {
+
+        }
+    }
+
+    public ComplianceConfigurator(String[] args, String separator) {
+        processArguments(args, separator);
+        generateComplianceRules();
+    }
+
+    private void addProperties(SonarComplianceBuilder builder, BuildListener listener) {
         try {
             addProperty(ComplianceConstants.PRIMARY_SONAR_URL, builder.getPrimarySonarURL());
             addProperty(ComplianceConstants.PRIMARY_PROJECT_KEY, builder.getPrimaryProjectKey());
@@ -41,13 +64,27 @@ public class ComplianceConfigurator extends BaseConfigurator {
 
             generateComplianceRules();
         } catch (Exception e) {
-
+            e.printStackTrace(listener.getLogger());
         }
     }
 
-    public ComplianceConfigurator(String[] args, String separator) {
-        processArguments(args, separator);
-        generateComplianceRules();
+    private void expandMacros(AbstractBuild build, BuildListener listener) {
+        if (Jenkins.getInstance().getPlugin("token-macro") != null) {
+            for (Map.Entry<String, String> entry : getProperties().entrySet()) {
+                try {
+                    entry.setValue(TokenMacro.expandAll(build, listener, entry.getValue()));
+                } catch (MacroEvaluationException e) {
+                    e.printStackTrace(listener.getLogger());
+                    e.printStackTrace();
+                } catch (IOException e) {
+                    e.printStackTrace(listener.getLogger());
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace(listener.getLogger());
+                }
+
+            }
+        }
     }
 
     private int processArguments(String[] args, String separator) {
@@ -72,6 +109,10 @@ public class ComplianceConfigurator extends BaseConfigurator {
 
     public String getSonarURL() {
         return getProperties().get(ComplianceConstants.PRIMARY_SONAR_URL);
+    }
+
+    public String getName() {
+        return getProperties().get(ComplianceConstants.NAME);
     }
 
     @Override

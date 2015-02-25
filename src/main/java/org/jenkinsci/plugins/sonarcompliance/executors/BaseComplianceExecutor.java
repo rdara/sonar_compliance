@@ -37,26 +37,22 @@ public abstract class BaseComplianceExecutor implements Executor {
     }
 
     public boolean execute(ComplianceConfigurator conf) {
+        boolean bRetValue = true;
         String metrics = Utilities.getConcatenatedString(conf.getAllMetrics(), ",");
         Resource primaryResource = getResource(conf.getPrimarySonarAPIResourceURL(), conf.getPrimaryProjectKey(),
                 metrics);
         processAdditionalSonar(conf, primaryResource, metrics);
-
+        logMetrics(conf, primaryResource);
         ScriptEngine engine = getJavaScriptEngine();
         for (ComplianceRule rule : conf.getAllComplianceRules().values()) {
             try {
                 for (MSR msr : primaryResource.getMsr()) {
-                    conf.getLogger().println("msr.getKey() = " + msr.getKey());
-                    conf.getLogger().println("msr.getVal() = " + getMSRValue(msr));
-                    conf.getLogger().println("msr.getVar1 = " + msr.getVar1());
-
                     engine.eval(msr.getKey() + " = " + getMSRValue(msr));
                 }
-                conf.getLogger().println("rule.getRule() = " + rule.getRule());
                 Boolean result = (Boolean) engine.eval(rule.getRule());
-                conf.getLogger().println("result = " + result);
+                bRetValue &= result.booleanValue();
                 rule.setResult(result == Boolean.TRUE ? Result.SUCCESS : Result.FAILURE);
-                conf.getLogger().println("rule.getResult()  = " + rule.getResult());
+                conf.getLogger().println(rule.getRule() + " is " + rule.getResult());
             } catch (ScriptException e) {
                 rule.setResult(Result.EXCEPTION);
                 rule.setException(
@@ -70,7 +66,14 @@ public abstract class BaseComplianceExecutor implements Executor {
                                         + " couldn't be evaluated. Only JavaScript expressions with sonar supported metrics as variables are supported.");
             }
         }
-        return true;
+        return bRetValue;
+    }
+
+    private void logMetrics(ComplianceConfigurator conf, Resource resource) {
+        conf.getLogger().println("The collected Metrics from Sonar for " + conf.getName() + ":");
+        for (MSR msr : resource.getMsr()) {
+            conf.getLogger().println(msr.getKey() + " = " + getMSRValue(msr));
+        }
     }
 
     protected void processAdditionalSonar(ComplianceConfigurator conf, Resource primaryResource, String metrics) {
