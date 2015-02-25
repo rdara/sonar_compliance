@@ -21,12 +21,12 @@
   		<f:textbox />
   	</f:entry>
   	
-  	<f:entry title="Dynamic sonar compliance?" field="sonarComparison" description="If checked, difference of sonar's metrics are used.">
+  	<f:entry title="Differential sonar compliance?" field="sonarComparison" description="If checked, difference of sonar's metrics are used.">
     	<f:checkbox name="sonarComparison"/>
     </f:entry>
   	
   	<!--
-    <f:entry title="Do you want to use an additional sonar instance for dynamic comparison?" description="If checked, This secondary sonar metrics are compared to primary sonar metrics.">
+    <f:entry title="Do you want to use an additional sonar instance for differential comparison?" description="If checked, This secondary sonar metrics are compared to primary sonar metrics.">
     	<f:checkbox name="additionalSonar" />
     </f:entry>
 	-->

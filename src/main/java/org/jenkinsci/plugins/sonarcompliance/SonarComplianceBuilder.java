@@ -67,11 +67,11 @@ public class SonarComplianceBuilder extends Builder {
     @Override
     public boolean perform(AbstractBuild build, Launcher launcher, BuildListener listener) {
 
-        ComplianceConfigurator complianceConfigurator = new ComplianceConfigurator(this);
+        ComplianceConfigurator complianceConfigurator = new ComplianceConfigurator(this, build, listener);
         complianceConfigurator.setLogger(listener.getLogger());
 
         Executor executor = ComplianceExecutorFactory.getComplianceExecutor(complianceConfigurator);
-        executor.execute(complianceConfigurator);
+        boolean buildResult = executor.execute(complianceConfigurator);
 
         List<ParameterValue> params = new ArrayList<ParameterValue>();
         for (ComplianceRule rule : complianceConfigurator.getAllComplianceRules().values()) {
@@ -88,17 +88,7 @@ public class SonarComplianceBuilder extends Builder {
         }
         build.addAction(new SonarComplainceParametersAction("SC_" + getName(), params));
 
-        // This is where you 'build' the project.
-        // Since this is a dummy, we just say 'hello world' and call that a build.
-
-        // This also shows how you can consult the global configuration of the builder
-        /*
-        if (getDescriptor().getUseFrench())
-            listener.getLogger().println("Bonjour, "+name+"!");
-        else
-            listener.getLogger().println("Hello, "+name+"!");
-            */
-        return true;
+        return buildResult;
     }
 
     // Overridden for better type safety.
@@ -117,7 +107,7 @@ public class SonarComplianceBuilder extends Builder {
      * See <tt>src/main/resources/hudson/plugins/hello_world/HelloWorldBuilder/*.jelly</tt>
      * for the actual HTML fragment for the configuration screen.
      */
-    @Extension
+    @Extension(optional = true)
     // This indicates to Jenkins that this is an implementation of an extension point.
     public static final class DescriptorImpl extends BuildStepDescriptor<Builder> {
         /**
@@ -127,7 +117,6 @@ public class SonarComplianceBuilder extends Builder {
          * <p>
          * If you don't want fields to be persisted, use <tt>transient</tt>.
          */
-        private boolean useFrench;
 
         /**
          * In order to load the persisted global configuration, you have to 
@@ -174,7 +163,7 @@ public class SonarComplianceBuilder extends Builder {
         public boolean configure(StaplerRequest req, JSONObject formData) throws FormException {
             // To persist global configuration information,
             // set that to properties and call save().
-            useFrench = formData.getBoolean("useFrench");
+            //useFrench = formData.getBoolean("useFrench");
             // ^Can also use req.bindJSON(this, formData);
             //  (easier when there are many fields; need set* methods for this, like setUseFrench)
             req.bindJSON(this, formData);
@@ -187,10 +176,10 @@ public class SonarComplianceBuilder extends Builder {
          *
          * The method name is bit awkward because global.jelly calls this method to determine
          * the initial state of the checkbox by the naming convention.
-         */
         public boolean getUseFrench() {
             return useFrench;
         }
+        */
     }
 
     public String getPrimarySonarURL() {
